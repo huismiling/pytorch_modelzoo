@@ -9,7 +9,7 @@ from .misc import BatchNorm2d
 from .misc import interpolate
 
 try:
-    import torch_mlu.core.mlu_model as ct
+    import torch_mlu
     _USE_MLU = True
 except ImportError:
     _USE_MLU = False

@@ -19,7 +19,9 @@ sys.path.append(cur_dir + "/../../../../../../../tools/utils/")
 from metric import MetricCollector
 
 try:
-    import torch_mlu.core.mlu_model as ct
+    import torch_mlu
+    from torch_mlu.utils.model_transfer import transfer
+    from torch.mlu import amp
 except ImportError:
     print("Try to import torch_mlu failed!!!")
     from apex import amp
@@ -111,12 +113,7 @@ def do_train(
 
         optimizer.zero_grad()
         if device.type == 'mlu':
-            if cfg.USE_CNMIX:
-                import cnmix
-                with cnmix.scale_loss(losses, optimizer) as scaled_losses:
-                    scaled_losses.backward()
-            else:
-                losses.backward()
+            losses.backward()
         else:
             # Note: If mixed precision is not used, this ends up doing nothing
             # Otherwise apply loss scaling for mixed-precision recipe

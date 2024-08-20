@@ -25,23 +25,11 @@ from maskrcnn_benchmark.utils.miscellaneous import mkdir, save_config
 from tensorboardX import SummaryWriter
 
 try:
-    import torch_mlu.core.mlu_model as ct
+    import torch_mlu
+    from torch.mlu import amp
     _USE_MLU = True
 except ImportError:
     _USE_MLU = False
-
-if _USE_MLU == False:
-    # See if we can use apex.DistributedDataParallel instead of the torch default,
-    # and enable mixed-precision via apex.amp
-    try:
-        from apex import amp
-    except ImportError:
-        raise ImportError('Use APEX for multi-precision via apex.amp')
-else:
-    try:
-        import cnmix
-    except ImportError:
-        print('Try to import cnmix failed!!!')
 
 def train(cfg, args,writer):
     model = build_detection_model(cfg)
@@ -191,10 +179,12 @@ def main():
     num_devs = int(os.environ["WORLD_SIZE"]) if "WORLD_SIZE" in os.environ else 1
     args.distributed = num_devs > 1
 
+    local_rank = int(os.environ.get("LOCAL_RANK","0"))
+    args.local_rank = local_rank
     if args.distributed:
         if _USE_MLU:
             backend = "cncl"
-            ct.set_device(args.local_rank)
+            torch.mlu.set_device(args.local_rank)
         else:
             backend = "nccl"
             torch.cuda.set_device(args.local_rank)

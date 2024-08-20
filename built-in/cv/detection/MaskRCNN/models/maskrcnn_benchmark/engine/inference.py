@@ -30,8 +30,7 @@ def compute_on_dataset(model, data_loader, device, bbox_aug, timer=None):
             if timer:
                 if not device.type == 'cpu':
                     if device.type == 'mlu':
-                        import torch_mlu.core.mlu_model as ct
-                        ct.synchronize()
+                        torch.mlu.synchronize()
                     else:
                         torch.cuda.synchronize()
                 timer.toc()

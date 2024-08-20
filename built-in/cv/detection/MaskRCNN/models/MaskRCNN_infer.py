@@ -23,23 +23,12 @@ from maskrcnn_benchmark.utils.miscellaneous import mkdir, save_config
 from tensorboardX import SummaryWriter
 
 try:
-    import torch_mlu.core.mlu_model as ct
+    import torch_mlu
+    from torch.mlu import amp
     _USE_MLU = True
 except ImportError:
     _USE_MLU = False
 
-if _USE_MLU == False:
-    # See if we can use apex.DistributedDataParallel instead of the torch default,
-    # and enable mixed-precision via apex.amp
-    try:
-        from apex import amp
-    except ImportError:
-        raise ImportError('Use APEX for multi-precision via apex.amp')
-else:
-    try:
-        import cnmix
-    except ImportError:
-        print('Try to import cnmix failed!!!')
 
 def infer(cfg, model, distributed,args):
     if distributed:
